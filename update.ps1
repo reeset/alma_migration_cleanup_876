@@ -1,5 +1,5 @@
-$SourceFile = "c:\users\reese\downloads\merge.mrk"
-$DestinationFile = "c:\users\reese\downloads\merged2.mrk"
+$SourceFile = "[full path to source file].mrk"
+$DestinationFile = "[full path to destination file].mrk"
 $PrivateNote = '$xGeneric Note about private data'
 
 $reader = New-Object -TypeName System.IO.StreamReader -ArgumentList $SourceFile
