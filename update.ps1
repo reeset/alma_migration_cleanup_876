@@ -1,4 +1,4 @@
-$SourceFile = "[full path to source file].mrk"
+$SourceFile = "[full path to sourcefile].mrk"
 $DestinationFile = "[full path to destination file].mrk"
 $PrivateNote = '$xGeneric Note about private data'
 
@@ -11,6 +11,7 @@ $SerialList = New-Object System.Collections.Generic.List[string]
 $bfound876 = [bool]$false
 $counter = 1
 $separator = '$'
+$bAddLinking = [bool]$false
 $options = [System.StringSplitOptions]::None
 while (($current_line =$reader.ReadLine()) -ne $null)
 {
@@ -27,7 +28,7 @@ while (($current_line =$reader.ReadLine()) -ne $null)
 				}
 			}
 
-			if ($bfound876 -eq [bool]$false) {
+			if ($bfound876 -eq [bool]$false -AND $isMonograph -eq [bool]$true) {
 				$newline = "=876  \\" +  $PrivateNote + '$pmb' + ([string]$counter).PadLeft(13,'0')
 				$writer.WriteLine($newline)
 				$counter = $counter + 1
@@ -42,6 +43,7 @@ while (($current_line =$reader.ReadLine()) -ne $null)
 		$bfound876 = [bool]$false
 		$str_8 = ""
 		$bLDR = [bool]$false
+		$bAddLinking = [bool]$false
 		continue
 		
 	}		
@@ -52,10 +54,11 @@ while (($current_line =$reader.ReadLine()) -ne $null)
 	}
 	if ($current_line.Contains("=866")) {
 		#per the provided information -- this doesn't need processing
-		$isMonograph = [bool]$true
+		$isMonograph = [bool]$false
+		$bAddLinking = [bool]$false
 
 	} elseif ($current_line.Contains("=863")) {
-		
+		$bAddLinking = [bool]$true		
 		$isMonograph = [bool]$false
 		$arr = $current_line.Split($separator, $options)
 		foreach ($l in $arr) {
@@ -116,9 +119,16 @@ while (($current_line =$reader.ReadLine()) -ne $null)
 					$writer.WriteLine($current_line)
 				}
 			} else {
-				$current_line = $current_line.Substring(0,8) + '$' + $str_8 + $current_line.Substring(8) + $PrivateNote + '$pmpb' +  ([string]$counter).PadLeft(13,'0')
-				$writer.WriteLine($current_line)
-				$counter = $counter + 1
+				if ($bAddLinking -eq [bool]$true) {
+					$current_line = $current_line.Substring(0,8) + '$' + $str_8 + $current_line.Substring(8) + $PrivateNote + '$pmpb' +  ([string]$counter).PadLeft(13,'0')
+					$writer.WriteLine($current_line)
+					$counter = $counter + 1
+				} else {
+					#this is an 866 field -- no link pair created
+					$current_line = $current_line.Substring(0,8) +  $PrivateNote + '$pmpb' +  ([string]$counter).PadLeft(13,'0')
+					$writer.WriteLine($current_line)
+					$counter = $counter + 1
+				}
 			}    
 		} else {
 			$writer.WriteLine($current_line)
