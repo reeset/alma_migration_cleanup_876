@@ -1,4 +1,4 @@
-$SourceFile = "[full path to sourcefile].mrk"
+$SourceFile = "[full path to source file].mrk"
 $DestinationFile = "[full path to destination file].mrk"
 $PrivateNote = '$xGeneric Note about private data'
 
@@ -22,7 +22,12 @@ while (($current_line =$reader.ReadLine()) -ne $null)
 				#need to generate some 876 lines
 				foreach ($l in $SerialList) {
 					$tmp_string = [string]$l
-					$newline = "=876  \\" + '$' + $tmp_string + $PrivateNote + '$pmpb' +  ([string]$counter).PadLeft(13,'0')
+					#if tmp_string is zero -- avoid creating an invalid record (hanging subfield)
+					if ($tmp_string.Length -gt 0) {
+						$newline = "=876  \\" + '$' + $tmp_string + $PrivateNote + '$pmpb' +  ([string]$counter).PadLeft(13,'0')
+					} else {
+						$newline = "=876  \\" +  $PrivateNote + '$pmpb' +  ([string]$counter).PadLeft(13,'0')
+					}
 					$writer.WriteLine($newline)
 					$counter = $counter + 1
 				}
@@ -123,9 +128,12 @@ while (($current_line =$reader.ReadLine()) -ne $null)
 					$current_line = $current_line.Substring(0,8) + '$' + $str_8 + $current_line.Substring(8) + $PrivateNote + '$pmpb' +  ([string]$counter).PadLeft(13,'0')
 					$writer.WriteLine($current_line)
 					$counter = $counter + 1
-				} else {
+				} else {				
 					#this is an 866 field -- no link pair created
-					$current_line = $current_line.Substring(0,8) +  $PrivateNote + '$pmpb' +  ([string]$counter).PadLeft(13,'0')
+					#capture all other data
+					#$str_8 ignorned because using it will create a hanging subfield
+					#invalidating records.
+					$current_line = $current_line.Substring(0,8) +  $current_line.Substring(8) + $PrivateNote + '$pmpb' +  ([string]$counter).PadLeft(13,'0')
 					$writer.WriteLine($current_line)
 					$counter = $counter + 1
 				}
