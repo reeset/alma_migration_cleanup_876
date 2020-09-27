@@ -2,6 +2,7 @@ $SourceFile = "[full path to source file].mrk"
 $DestinationFile = "[full path to destination file].mrk"
 $PrivateNote = '$xGeneric Note about private data'
 
+
 $reader = New-Object -TypeName System.IO.StreamReader -ArgumentList $SourceFile
 $writer = New-Object -TypeName System.IO.StreamWriter -ArgumentList $DestinationFile
 
@@ -133,9 +134,13 @@ while (($current_line =$reader.ReadLine()) -ne $null)
 					#capture all other data
 					#$str_8 ignorned because using it will create a hanging subfield
 					#invalidating records.
-					$current_line = $current_line.Substring(0,8) +  $current_line.Substring(8) + $PrivateNote + '$pmpb' +  ([string]$counter).PadLeft(13,'0')
-					$writer.WriteLine($current_line)
-					$counter = $counter + 1
+					if (!$current_line.Contains('$p')) {
+						$current_line = $current_line.Substring(0,8) +  $current_line.Substring(8) + $PrivateNote + '$pmpb' +  ([string]$counter).PadLeft(13,'0')
+						$writer.WriteLine($current_line)
+						$counter = $counter + 1
+					} else {
+						$writer.WriteLine($current_line);
+					}
 				}
 			}    
 		} else {
